@@ -21,4 +21,3 @@ Build and start:
 
 ## Adding plugins
 If you want to add custom SourceMod plugins, drop .smx files into cstrike/addons/sourcemod/plugins/ (persisted via the volume).
-# cs-source-server
