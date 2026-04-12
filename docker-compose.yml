@@ -1,0 +1,17 @@
+services:
+  css:
+    build: .
+    container_name: css-server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      # Override command-line args via SRCDS_ARGS if needed
+      - SRCDS_ARGS=
+    stdin_open: true
+    tty: true
+    volumes:
+      # Persist server data (maps, logs, configs) across rebuilds
+      - css-data:/home/steam/css/cstrike
+
+volumes:
+  css-data:
