@@ -1,17 +1,37 @@
 services:
-  css:
-    build: .
-    container_name: css-server
+  casual:
+    build:
+      context: .
+      args:
+        SERVER_DIR: servers/casual
+    container_name: css-casual
     restart: unless-stopped
-    network_mode: host
-    environment:
-      # Override command-line args via SRCDS_ARGS if needed
-      - SRCDS_ARGS=
+    ports:
+      - "27015:27015/tcp"
+      - "27015:27015/udp"
     stdin_open: true
     tty: true
     volumes:
-      # Persist server data (maps, logs, configs) across rebuilds
-      - css-data:/home/steam/css/cstrike
+      - casual-data:/home/steam/css/cstrike
+
+  # To add a new server, copy this template and adjust:
+  #
+  # surf:
+  #   build:
+  #     context: .
+  #     args:
+  #       SERVER_DIR: servers/surf
+  #   container_name: css-surf
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27016:27015/tcp"
+  #     - "27016:27015/udp"
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - surf-data:/home/steam/css/cstrike
+  #   command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27015", "+maxplayers", "32", "+map", "surf_mesa"]
 
 volumes:
-  css-data:
+  casual-data:
+  # surf-data:

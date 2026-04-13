@@ -35,13 +35,18 @@ RUN /home/steam/steamcmd/steamcmd.sh \
 RUN mkdir -p /home/steam/.steam/sdk32 && \
     ln -s /home/steam/steamcmd/linux32/steamclient.so /home/steam/.steam/sdk32/steamclient.so
 
-# Copy install script and run it
-COPY --chown=steam:steam install_plugins.sh /home/steam/install_plugins.sh
-RUN chmod +x /home/steam/install_plugins.sh && \
-    /home/steam/install_plugins.sh
+# Copy shared base install script (MetaMod + SourceMod)
+COPY --chown=steam:steam install_base.sh /home/steam/install_base.sh
+RUN chmod +x /home/steam/install_base.sh
 
-# Copy server config if present
-COPY --chown=steam:steam server.cfg /home/steam/css/cstrike/cfg/server.cfg
+# Copy and run server-specific mod install script
+ARG SERVER_DIR=servers/casual
+COPY --chown=steam:steam ${SERVER_DIR}/install_mods.sh /home/steam/install_mods.sh
+RUN chmod +x /home/steam/install_mods.sh && \
+    /home/steam/install_mods.sh
+
+# Copy server-specific config
+COPY --chown=steam:steam ${SERVER_DIR}/server.cfg /home/steam/css/cstrike/cfg/server.cfg
 
 # CS:S server ports
 EXPOSE 27015/tcp
