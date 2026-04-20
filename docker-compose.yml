@@ -11,7 +11,16 @@ services:
     stdin_open: true
     tty: true
     env_file: .env
-    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27015", "+maxplayers", "24", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "de_dust2"]
+    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27015", "+maxplayers", "24", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+sv_downloadurl", "${FASTDL_URL}", "+map", "de_dust2"]
+
+  fastdl:
+    image: nginx:alpine
+    container_name: css-fastdl
+    network_mode: host
+    volumes:
+      - ./instances/casual/css:/usr/share/nginx/html:ro
+      - ./fastdl.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
 
   # To add a new server, copy this template and adjust:
   #

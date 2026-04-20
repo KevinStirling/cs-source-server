@@ -6,8 +6,10 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
 
 ```
 ├── Dockerfile              # Runtime image (debian + i386 libs, no game data)
-├── docker-compose.yml      # Defines each server as a service
+├── docker-compose.yml      # Defines each server as a service + FastDL nginx
 ├── setup.sh                # Installs game + mods into instances/<server>/
+├── compress_maps.sh        # Bzip2-compresses custom maps for FastDL
+├── fastdl.conf             # Nginx config for FastDL
 ├── install_base.sh         # Installs MetaMod:Source + SourceMod (shared by all servers)
 ├── servers/
 │   └── casual/
@@ -34,12 +36,13 @@ Open the required server ports (add more ports as you add servers):
 ```
 sudo ufw allow 27015/tcp
 sudo ufw allow 27015/udp
-sudo ufw allow 27020/udp
+sudo ufw allow 27020/tcp
 ```
 
-Create a `.env` file with your Steam Game Server Login Token ([create one here](https://steamcommunity.com/dev/managegameservers)):
+Create a `.env` file with your Steam Game Server Login Token ([create one here](https://steamcommunity.com/dev/managegameservers)) and FastDL URL:
 ```
 STEAM_LOGIN_TOKEN=your_token_here
+FASTDL_URL=http://your-server-ip:27020
 ```
 
 Install the game and mods for a server:
@@ -80,10 +83,26 @@ The game files live on the host under `instances/<server>/css/`. Add content via
 - **Plugins:** `instances/casual/css/cstrike/addons/sourcemod/plugins/`
 - **Configs:** `instances/casual/css/cstrike/cfg/`
 
-Restart the server after adding new maps or plugins:
+After adding custom maps, compress them for FastDL:
+```
+./compress_maps.sh casual
+```
+
+Restart the server to pick up changes:
 ```
 docker compose restart casual
 ```
+
+## FastDL
+
+An nginx container serves custom content to clients on port 27020. Clients connecting to the server will automatically download any custom maps they're missing.
+
+Set the `FASTDL_URL` in your `.env` file to your server's public IP:
+```
+FASTDL_URL=http://1.2.3.4:27020
+```
+
+After adding new custom maps, always run `./compress_maps.sh <server>` to create `.bz2` files for faster client downloads.
 
 ## Adding a New Server
 
@@ -118,11 +137,12 @@ docker compose restart casual
      working_dir: /css
      volumes:
        - ./instances/surf/css:/css
-       - ./instances/surf/sdk32:/root/.steam/sdk32:ro
+       - ./instances/surf/sdk32:/home/steam/.steam/sdk32:ro
      restart: unless-stopped
      stdin_open: true
      tty: true
-     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+map", "surf_mesa"]
+     env_file: .env
+     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+sv_downloadurl", "${FASTDL_URL}", "+map", "surf_mesa"]
    ```
 
 6. Open the new port in your firewall:
