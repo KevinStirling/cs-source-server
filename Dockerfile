@@ -24,12 +24,12 @@ RUN mkdir -p /home/steam/steamcmd && \
     curl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
     | tar -xz -C /home/steam/steamcmd
 
-# Install CS:S dedicated server (app ID 232330)
+# Install CS:S dedicated server (app ID 232330) into a staging directory.
 # steamcmd often exits 8 on the first attempt (self-update + large download);
 # retry up to 5 times until it succeeds.
 RUN attempts=0; \
     until /home/steam/steamcmd/steamcmd.sh \
-        +force_install_dir /home/steam/css \
+        +force_install_dir /home/steam/css-base \
         +login anonymous \
         +app_update 232330 validate \
         +quit; do \
@@ -56,14 +56,18 @@ RUN chmod +x /home/steam/install_mods.sh && \
     /home/steam/install_mods.sh
 
 # Copy server-specific config
-COPY --chown=steam:steam ${SERVER_DIR}/server.cfg /home/steam/css/cstrike/cfg/server.cfg
+COPY --chown=steam:steam ${SERVER_DIR}/server.cfg /home/steam/css-base/cstrike/cfg/server.cfg
+
+# Copy entrypoint script
+COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
+RUN chmod +x /home/steam/entrypoint.sh
 
 # CS:S server ports
 EXPOSE 27015/tcp
 EXPOSE 27015/udp
 EXPOSE 27020/udp
 
-ENTRYPOINT ["/home/steam/css/srcds_run"]
+ENTRYPOINT ["/home/steam/entrypoint.sh"]
 CMD ["-game", "cstrike", \
      "-console", \
      "-tickrate", "128", \

@@ -12,7 +12,7 @@ set -euo pipefail
 # Ultimate Mapchooser (UMC) — compiled from source
 # https://github.com/Steell/Ultimate-Mapchooser
 # ---------------------------------------------------------------------------
-CSS_DIR="/home/steam/css/cstrike"
+CSS_DIR="/home/steam/css-base/cstrike"
 SM_DIR="${CSS_DIR}/addons/sourcemod"
 SPCOMP="${SM_DIR}/scripting/spcomp"
 

@@ -12,7 +12,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - casual-data:/home/steam/css/cstrike
+      - ./data/casual:/home/steam/css
 
   # To add a new server, copy this template and adjust:
   #
@@ -29,9 +29,5 @@ services:
   #   stdin_open: true
   #   tty: true
   #   volumes:
-  #     - surf-data:/home/steam/css/cstrike
+  #     - ./data/surf:/home/steam/css
   #   command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27015", "+maxplayers", "32", "+map", "surf_mesa"]
-
-volumes:
-  casual-data:
-  # surf-data:
