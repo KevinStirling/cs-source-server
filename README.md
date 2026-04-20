@@ -19,6 +19,15 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
         └── sdk32/          # steamclient.so for runtime
 ```
 
+## Prerequisites
+
+Install the 32-bit libraries required by SteamCMD:
+```
+sudo dpkg --add-architecture i386
+sudo apt-get update
+sudo apt-get install lib32gcc-s1 lib32stdc++6 libz1:i386
+```
+
 ## Usage
 
 Open the required server ports (add more ports as you add servers):
