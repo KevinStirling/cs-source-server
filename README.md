@@ -39,10 +39,9 @@ sudo ufw allow 27015/udp
 sudo ufw allow 27020/tcp
 ```
 
-Create a `.env` file with your Steam Game Server Login Token ([create one here](https://steamcommunity.com/dev/managegameservers)) and FastDL URL:
+Create a `.env` file with your Steam Game Server Login Token ([create one here](https://steamcommunity.com/dev/managegameservers)):
 ```
 STEAM_LOGIN_TOKEN=your_token_here
-FASTDL_URL=http://your-server-ip:27020
 ```
 
 Install the game and mods for a server:
@@ -97,9 +96,9 @@ docker compose restart casual
 
 An nginx container serves custom content to clients on port 27020. Clients connecting to the server will automatically download any custom maps they're missing.
 
-Set the `FASTDL_URL` in your `.env` file to your server's public IP:
+Set `sv_downloadurl` in your instance's `server.cfg` to your server's public IP:
 ```
-FASTDL_URL=http://1.2.3.4:27020
+sv_downloadurl "http://your-server-ip:27020"
 ```
 
 After adding new custom maps, always run `./compress_maps.sh <server>` to create `.bz2` files for faster client downloads.
@@ -142,7 +141,7 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
      stdin_open: true
      tty: true
      env_file: .env
-     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+sv_downloadurl", "${FASTDL_URL}", "+map", "surf_mesa"]
+     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "surf_mesa"]
    ```
 
 6. Open the new port in your firewall:
