@@ -5,13 +5,18 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
 ## Project Structure
 
 ```
-├── Dockerfile              # Shared base image, accepts SERVER_DIR build arg
+├── Dockerfile              # Runtime image (debian + i386 libs, no game data)
 ├── docker-compose.yml      # Defines each server as a service
+├── setup.sh                # Installs game + mods into instances/<server>/
 ├── install_base.sh         # Installs MetaMod:Source + SourceMod (shared by all servers)
-└── servers/
+├── servers/
+│   └── casual/
+│       ├── install_mods.sh # Server-specific plugin installation
+│       └── server.cfg      # Server-specific config
+└── instances/              # Created by setup.sh, mounted by Docker (gitignored)
     └── casual/
-        ├── install_mods.sh # Calls install_base.sh, then adds server-specific plugins
-        └── server.cfg      # Server-specific config
+        ├── css/            # Full game installation
+        └── sdk32/          # steamclient.so for runtime
 ```
 
 ## Usage
@@ -23,6 +28,11 @@ sudo ufw allow 27015/udp
 sudo ufw allow 27020/udp
 ```
 
+Install the game and mods for a server:
+```
+./setup.sh casual
+```
+
 Build and start:
 ```
 docker compose up -d --build
@@ -30,7 +40,7 @@ docker compose up -d --build
 
 Start a specific server:
 ```
-docker compose up -d --build casual
+docker compose up -d casual
 ```
 
 View logs:
@@ -48,6 +58,19 @@ Stop all servers:
 docker compose down
 ```
 
+## Adding Custom Content
+
+The game files live on the host under `instances/<server>/css/`. Add content via SFTP or directly:
+
+- **Maps:** `instances/casual/css/cstrike/maps/`
+- **Plugins:** `instances/casual/css/cstrike/addons/sourcemod/plugins/`
+- **Configs:** `instances/casual/css/cstrike/cfg/`
+
+Restart the server after adding new maps or plugins:
+```
+docker compose restart casual
+```
+
 ## Adding a New Server
 
 1. Create a new directory under `servers/`:
@@ -55,41 +78,40 @@ docker compose down
    mkdir servers/surf
    ```
 
-2. Add an `install_mods.sh` script that calls the base installer, then adds any server-specific plugins:
+2. Add an `install_mods.sh` script for any server-specific plugins:
    ```bash
    #!/usr/bin/env bash
    set -euo pipefail
-   /home/steam/install_base.sh
 
-   CSS_DIR="/home/steam/css/cstrike"
+   CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
    # curl -sSL "https://example.com/plugin.smx" \
    #     -o "${CSS_DIR}/addons/sourcemod/plugins/plugin.smx"
    ```
 
 3. Add a `server.cfg` with the server's settings.
 
-4. Add a new service in `docker-compose.yml` with a unique host port:
+4. Run setup:
+   ```
+   ./setup.sh surf
+   ```
+
+5. Add a new service in `docker-compose.yml` with a unique port:
    ```yaml
    surf:
-     build:
-       context: .
-       args:
-         SERVER_DIR: servers/surf
+     build: .
      container_name: css-surf
+     network_mode: host
+     working_dir: /css
+     volumes:
+       - ./instances/surf/css:/css
+       - ./instances/surf/sdk32:/root/.steam/sdk32:ro
      restart: unless-stopped
-     ports:
-       - "27016:27015/tcp"
-       - "27016:27015/udp"
      stdin_open: true
      tty: true
-     volumes:
-       - surf-data:/home/steam/css/cstrike
-     command: ["-game", "cstrike", "-console", "-tickrate", "102",
-               "-port", "27015", "+maxplayers", "32", "+map", "surf_mesa"]
+     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+map", "surf_mesa"]
    ```
-   Don't forget to add the volume (`surf-data:`) to the `volumes:` section at the bottom.
 
-5. Open the new port in your firewall:
+6. Open the new port in your firewall:
    ```
    sudo ufw allow 27016/tcp
    sudo ufw allow 27016/udp
@@ -97,7 +119,7 @@ docker compose down
 
 ## Updating Base Plugins
 
-MetaMod:Source and SourceMod versions are pinned at the top of `install_base.sh`. Bump the version and build numbers there, then rebuild:
+MetaMod:Source and SourceMod versions are pinned at the top of `install_base.sh`. Bump the version and build numbers there, then re-run setup:
 ```
-docker compose up -d --build
+./setup.sh casual
 ```

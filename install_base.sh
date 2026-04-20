@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-CSS_DIR="/home/steam/css-base/cstrike"
+CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
 
 # ---------------------------------------------------------------------------
 # Version config — bump these when new stable releases come out.

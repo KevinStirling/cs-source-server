@@ -3,71 +3,19 @@ FROM debian:bookworm-slim
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
         lib32gcc-s1 \
         lib32stdc++6 \
         lib32z1 \
         libncurses5:i386 \
         libtinfo5:i386 \
-        unzip \
-        tar \
     && rm -rf /var/lib/apt/lists/*
 
-# Create unprivileged user
-RUN useradd -m -s /bin/bash steam
+RUN useradd -m -u 1000 steam
+
 USER steam
-WORKDIR /home/steam
+WORKDIR /css
 
-# Install SteamCMD
-RUN mkdir -p /home/steam/steamcmd && \
-    curl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
-    | tar -xz -C /home/steam/steamcmd
-
-# Install CS:S dedicated server (app ID 232330) into a staging directory.
-# steamcmd often exits 8 on the first attempt (self-update + large download);
-# retry up to 5 times until it succeeds.
-RUN attempts=0; \
-    until /home/steam/steamcmd/steamcmd.sh \
-        +force_install_dir /home/steam/css-base \
-        +login anonymous \
-        +app_update 232330 validate \
-        +quit; do \
-        attempts=$((attempts + 1)); \
-        if [ "$attempts" -ge 5 ]; then \
-            echo "steamcmd failed after $attempts attempts"; \
-            exit 1; \
-        fi; \
-        echo "steamcmd exited $?, retrying (attempt $((attempts + 1))/5)..."; \
-    done
-
-# Link steamclient.so so srcds can find it
-RUN mkdir -p /home/steam/.steam/sdk32 && \
-    ln -s /home/steam/steamcmd/linux32/steamclient.so /home/steam/.steam/sdk32/steamclient.so
-
-# Copy shared base install script (MetaMod + SourceMod)
-COPY --chown=steam:steam install_base.sh /home/steam/install_base.sh
-RUN chmod +x /home/steam/install_base.sh
-
-# Copy and run server-specific mod install script
-ARG SERVER_DIR=servers/casual
-COPY --chown=steam:steam ${SERVER_DIR}/install_mods.sh /home/steam/install_mods.sh
-RUN chmod +x /home/steam/install_mods.sh && \
-    /home/steam/install_mods.sh
-
-# Copy server-specific config
-COPY --chown=steam:steam ${SERVER_DIR}/server.cfg /home/steam/css-base/cstrike/cfg/server.cfg
-
-# Copy entrypoint script
-COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
-RUN chmod +x /home/steam/entrypoint.sh
-
-# CS:S server ports
-EXPOSE 27015/tcp
-EXPOSE 27015/udp
-EXPOSE 27020/udp
-
-ENTRYPOINT ["/home/steam/entrypoint.sh"]
+ENTRYPOINT ["./srcds_run"]
 CMD ["-game", "cstrike", \
      "-console", \
      "-tickrate", "128", \

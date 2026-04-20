@@ -1,33 +1,28 @@
 services:
   casual:
-    build:
-      context: .
-      args:
-        SERVER_DIR: servers/casual
+    build: .
     container_name: css-casual
+    network_mode: host
+    working_dir: /css
+    volumes:
+      - ./instances/casual/css:/css
+      - ./instances/casual/sdk32:/home/steam/.steam/sdk32:ro
     restart: unless-stopped
-    ports:
-      - "27015:27015/tcp"
-      - "27015:27015/udp"
     stdin_open: true
     tty: true
-    volumes:
-      - ./data/casual:/home/steam/css
+    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27015", "+maxplayers", "24", "+map", "de_dust2"]
 
   # To add a new server, copy this template and adjust:
   #
   # surf:
-  #   build:
-  #     context: .
-  #     args:
-  #       SERVER_DIR: servers/surf
+  #   build: .
   #   container_name: css-surf
+  #   network_mode: host
+  #   working_dir: /css
+  #   volumes:
+  #     - ./instances/surf/css:/css
+  #     - ./instances/surf/sdk32:/home/steam/.steam/sdk32:ro
   #   restart: unless-stopped
-  #   ports:
-  #     - "27016:27015/tcp"
-  #     - "27016:27015/udp"
   #   stdin_open: true
   #   tty: true
-  #   volumes:
-  #     - ./data/surf:/home/steam/css
-  #   command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27015", "+maxplayers", "32", "+map", "surf_mesa"]
+  #   command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+map", "surf_mesa"]
