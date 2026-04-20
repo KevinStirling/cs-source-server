@@ -37,6 +37,11 @@ sudo ufw allow 27015/udp
 sudo ufw allow 27020/udp
 ```
 
+Create a `.env` file with your Steam Game Server Login Token ([create one here](https://steamcommunity.com/dev/managegameservers)):
+```
+STEAM_LOGIN_TOKEN=your_token_here
+```
+
 Install the game and mods for a server:
 ```
 ./setup.sh casual

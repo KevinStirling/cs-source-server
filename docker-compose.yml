@@ -10,7 +10,8 @@ services:
     restart: unless-stopped
     stdin_open: true
     tty: true
-    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27015", "+maxplayers", "24", "+map", "de_dust2"]
+    env_file: .env
+    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27015", "+maxplayers", "24", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "de_dust2"]
 
   # To add a new server, copy this template and adjust:
   #
