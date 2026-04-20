@@ -18,7 +18,7 @@ services:
     container_name: css-fastdl
     network_mode: host
     volumes:
-      - ./instances/casual/css:/usr/share/nginx/html:ro
+      - ./instances/casual/css/cstrike:/usr/share/nginx/html:ro
       - ./fastdl.conf:/etc/nginx/conf.d/default.conf:ro
     restart: unless-stopped
 
