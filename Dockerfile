@@ -25,11 +25,21 @@ RUN mkdir -p /home/steam/steamcmd && \
     | tar -xz -C /home/steam/steamcmd
 
 # Install CS:S dedicated server (app ID 232330)
-RUN /home/steam/steamcmd/steamcmd.sh \
-    +force_install_dir /home/steam/css \
-    +login anonymous \
-    +app_update 232330 validate \
-    +quit
+# steamcmd often exits 8 on the first attempt (self-update + large download);
+# retry up to 5 times until it succeeds.
+RUN attempts=0; \
+    until /home/steam/steamcmd/steamcmd.sh \
+        +force_install_dir /home/steam/css \
+        +login anonymous \
+        +app_update 232330 validate \
+        +quit; do \
+        attempts=$((attempts + 1)); \
+        if [ "$attempts" -ge 5 ]; then \
+            echo "steamcmd failed after $attempts attempts"; \
+            exit 1; \
+        fi; \
+        echo "steamcmd exited $?, retrying (attempt $((attempts + 1))/5)..."; \
+    done
 
 # Link steamclient.so so srcds can find it
 RUN mkdir -p /home/steam/.steam/sdk32 && \
