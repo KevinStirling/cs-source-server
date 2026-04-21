@@ -9,23 +9,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
 
 # ---------------------------------------------------------------------------
-# Zombie:Reloaded 3.1 by Greyscale/rhelgeby (original CS:S version)
-# https://forums.alliedmods.net/showthread.php?t=205567
+# Zombie Reloaded fork by srcdslab
+# https://github.com/srcdslab/sm-plugin-zombiereloaded/
 # ---------------------------------------------------------------------------
-ZR_ZIP="${SCRIPT_DIR}/zombiereloaded-3.1-r733.zip"
+ZOM_TEMP="$(mktemp -d)"
+trap 'rm -rf "${ZOM_TEMP}"' EXIT
 
-if [ ! -f "${ZR_ZIP}" ]; then
-    echo "Error: ${ZR_ZIP} not found." >&2
-    echo "Download from https://forums.alliedmods.net/showthread.php?t=205567" >&2
-    echo "and place the zip in ${SCRIPT_DIR}/" >&2
-    exit 1
-fi
+echo ">>> Installing Zombie Reloaded..."
+curl -sSL "https://github.com/srcdslab/sm-plugin-zombiereloaded/releases/download/latest/sm-plugin-zombiereloaded-latest.tar.gz" \
+    -o "${ZOM_TEMP}/sm-plugin-zombiereloaded-latest.tar.gz"
+tar -xzf "${ZOM_TEMP}/sm-plugin-zombiereloaded-latest.tar.gz" -C "${ZOM_TEMP}"
 
-echo ">>> Installing Zombie:Reloaded 3.1..."
-ZR_TEMP="$(mktemp -d)"
-trap 'rm -rf "${ZR_TEMP}"' EXIT
-
-unzip "${ZR_ZIP}" -d "${ZR_TEMP}"
-cp -r "${ZR_TEMP}/"* "${CSS_DIR}/"
+# Copy common dir into cstrike
+cp -r "${ZOM_TEMP}/common/"* "${CSS_DIR}" 
 
 echo ">>> Zombie:Reloaded installed."
