@@ -29,6 +29,10 @@ echo ">>> Installing MetaMod:Source ${METAMOD_VERSION} (build ${METAMOD_BUILD}).
 curl -sSL "${METAMOD_URL}" -o "${TEMP_DIR}/metamod.tar.gz"
 tar -xzf "${TEMP_DIR}/metamod.tar.gz" -C "${CSS_DIR}"
 
+# CSS is 32-bit — remove the 64-bit MetaMod binaries to avoid conflicts
+rm -rf "${CSS_DIR}/addons/metamod/bin/linux64"
+rm -f "${CSS_DIR}/addons/metamod_x64.vdf"
+
 # MetaMod VDF — tells the engine to load MetaMod
 mkdir -p "${CSS_DIR}/addons"
 cat > "${CSS_DIR}/addons/metamod.vdf" <<'VDF'

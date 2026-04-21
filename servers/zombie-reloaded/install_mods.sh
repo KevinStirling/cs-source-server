@@ -19,7 +19,7 @@ trap 'rm -rf "${MOD_TEMP}"' EXIT
 # CSSFixes — fixes CSS engine crashes that SM 1.11 can trigger
 # https://github.com/srcdslab/sm-ext-cssfixes
 # ---------------------------------------------------------------------------
-CSSFIXES_URL="https://github.com/srcdslab/sm-ext-cssfixes/releases/download/1.17.0/sm-ext-cssfixes-1.17.0-linux.tar.gz"
+CSSFIXES_URL="https://github.com/srcdslab/sm-ext-cssfixes/releases/download/v1.19.0/sm-ext-cssfixes-ubuntu-20.04.tar.gz"
 
 echo ">>> Installing CSSFixes extension..."
 curl -sSL "${CSSFIXES_URL}" -o "${MOD_TEMP}/cssfixes.tar.gz"
