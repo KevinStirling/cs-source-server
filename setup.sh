@@ -39,6 +39,14 @@ done
 
 # Install MetaMod + SourceMod + server-specific mods
 export GAME_DIR
+
+# Source per-server version overrides if present
+if [ -f "${SERVER_DIR}/server.env" ]; then
+    set -a
+    . "${SERVER_DIR}/server.env"
+    set +a
+fi
+
 ./install_base.sh
 "${SERVER_DIR}/install_mods.sh"
 
