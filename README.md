@@ -8,6 +8,7 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
 ├── Dockerfile              # Runtime image (debian + i386 libs, no game data)
 ├── docker-compose.yml      # Defines each server as a service + FastDL nginx
 ├── setup.sh                # Installs game + mods into instances/<server>/
+├── addmap.sh               # Adds a map, compresses it, updates mapcycle
 ├── compress_maps.sh        # Bzip2-compresses custom maps for FastDL
 ├── fastdl.conf             # Nginx config for FastDL
 ├── install_base.sh         # Installs MetaMod:Source + SourceMod (shared by all servers)
@@ -76,16 +77,24 @@ docker compose down
 
 ## Adding Custom Content
 
-The game files live on the host under `instances/<server>/css/`. Add content via SFTP or directly:
+### Maps
 
-- **Maps:** `instances/casual/css/cstrike/maps/`
-- **Plugins:** `instances/casual/css/cstrike/addons/sourcemod/plugins/`
-- **Configs:** `instances/casual/css/cstrike/cfg/`
+Add a map by pointing to the `.bsp` file. This copies it to the server, compresses it for FastDL, adds it to the map rotation, and restarts the server:
+```
+./addmap.sh casual ~/maps/de_custom.bsp
+```
 
-After adding custom maps, compress them for FastDL:
+To bulk-compress maps that are already in place:
 ```
 ./compress_maps.sh casual
 ```
+
+### Other Content
+
+The game files live on the host under `instances/<server>/css/`. Add content via SFTP or directly:
+
+- **Plugins:** `instances/casual/css/cstrike/addons/sourcemod/plugins/`
+- **Configs:** `instances/casual/css/cstrike/cfg/`
 
 Restart the server to pick up changes:
 ```
