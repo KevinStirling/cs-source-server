@@ -50,6 +50,7 @@ echo ">>> Compiling Zombie Reloaded..."
 "${SPCOMP}" \
     -i"${SM_INCLUDE}" \
     -i"${ZR_SCRIPTING}/include" \
+    -i"${ZR_SCRIPTING}" \
     -o"${MOD_TEMP}/zombiereloaded.smx" \
     "${ZR_SCRIPTING}/zombiereloaded.sp"
 
