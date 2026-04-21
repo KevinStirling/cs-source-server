@@ -28,7 +28,7 @@ Install the 32-bit libraries required by SteamCMD:
 ```
 sudo dpkg --add-architecture i386
 sudo apt-get update
-sudo apt-get install lib32gcc-s1 lib32stdc++6 libz1:i386 bzip2
+sudo apt-get install lib32gcc-s1 lib32stdc++6 libz1:i386 bzip2 unzip curl
 ```
 
 ## Usage
