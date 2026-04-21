@@ -7,11 +7,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
+SPCOMP="${CSS_DIR}/addons/sourcemod/scripting/spcomp"
+SM_INCLUDE="${CSS_DIR}/addons/sourcemod/scripting/include"
 
-# ---------------------------------------------------------------------------
-# Zombie Reloaded fork by srcdslab
-# https://github.com/srcdslab/sm-plugin-zombiereloaded/
-# ---------------------------------------------------------------------------
 MOD_TEMP="$(mktemp -d)"
 trap 'rm -rf "${MOD_TEMP}"' EXIT
 
@@ -27,15 +25,38 @@ tar -xzf "${MOD_TEMP}/cssfixes.tar.gz" -C "${CSS_DIR}"
 echo ">>> CSSFixes installed."
 
 # ---------------------------------------------------------------------------
-# Zombie Reloaded fork by srcdslab
+# Zombie Reloaded — compiled from source against the local SM installation
 # https://github.com/srcdslab/sm-plugin-zombiereloaded/
 # ---------------------------------------------------------------------------
-echo ">>> Installing Zombie Reloaded..."
-curl -sSL "https://github.com/srcdslab/sm-plugin-zombiereloaded/releases/download/latest/sm-plugin-zombiereloaded-latest.tar.gz" \
-    -o "${MOD_TEMP}/sm-plugin-zombiereloaded-latest.tar.gz"
-tar -xzf "${MOD_TEMP}/sm-plugin-zombiereloaded-latest.tar.gz" -C "${MOD_TEMP}"
+ZR_REPO="https://github.com/srcdslab/sm-plugin-zombiereloaded.git"
+MC_REPO="https://github.com/srcdslab/sm-plugin-MultiColors.git"
+AFK_REPO="https://github.com/srcdslab/sm-plugin-AFKManager.git"
+TM_REPO="https://github.com/srcdslab/sm-plugin-TeamManager.git"
 
-# Copy common dir into cstrike
-cp -r "${MOD_TEMP}/common/"* "${CSS_DIR}"
+echo ">>> Cloning Zombie Reloaded source + dependencies..."
+git clone --depth 1 "${ZR_REPO}" "${MOD_TEMP}/zr"
+git clone --depth 1 "${MC_REPO}" "${MOD_TEMP}/mc"
+git clone --depth 1 "${AFK_REPO}" "${MOD_TEMP}/afk"
+git clone --depth 1 "${TM_REPO}" "${MOD_TEMP}/tm"
 
-echo ">>> Zombie:Reloaded installed."
+# Stage include dependencies alongside the ZR source
+ZR_SCRIPTING="${MOD_TEMP}/zr/src/addons/sourcemod/scripting"
+cp -r "${MOD_TEMP}/mc/addons/sourcemod/scripting/include/multicolors"* "${ZR_SCRIPTING}/include/"
+cp "${MOD_TEMP}/afk/addons/sourcemod/scripting/include/AFKManager.inc" "${ZR_SCRIPTING}/include/"
+cp "${MOD_TEMP}/tm/addons/sourcemod/scripting/include/TeamManager.inc" "${ZR_SCRIPTING}/include/"
+
+# Compile against the installed SM
+echo ">>> Compiling Zombie Reloaded..."
+"${SPCOMP}" \
+    -i"${SM_INCLUDE}" \
+    -i"${ZR_SCRIPTING}/include" \
+    -o"${MOD_TEMP}/zombiereloaded.smx" \
+    "${ZR_SCRIPTING}/zombiereloaded.sp"
+
+# Install compiled plugin
+cp "${MOD_TEMP}/zombiereloaded.smx" "${CSS_DIR}/addons/sourcemod/plugins/"
+
+# Install configs, gamedata, translations, and assets from common/
+cp -r "${MOD_TEMP}/zr/common/"* "${CSS_DIR}"
+
+echo ">>> Zombie:Reloaded compiled and installed."

@@ -33,8 +33,7 @@ services:
     restart: unless-stopped
     stdin_open: true
     tty: true
-    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27016", "+maxplayers", "32", "+map", "de_dust2"]
-
+    command: ["-game", "cstrike", "-console", "-debug", "-tickrate", "128", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN_ZOMBIE}", "+map", "de_dust2"]
   # To add a new server, copy this template and adjust:
   #
   # surf:
