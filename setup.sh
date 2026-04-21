@@ -42,9 +42,6 @@ export GAME_DIR
 ./install_base.sh
 "${SERVER_DIR}/install_mods.sh"
 
-# Copy server config
-cp "${SERVER_DIR}/server.cfg" "${GAME_DIR}/cstrike/cfg/server.cfg"
-
 # Set up steamclient.so for runtime
 mkdir -p "${INSTANCE_DIR}/sdk32"
 cp steamcmd/linux32/steamclient.so "${INSTANCE_DIR}/sdk32/"

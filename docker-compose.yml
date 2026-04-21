@@ -22,6 +22,19 @@ services:
       - ./fastdl.conf:/etc/nginx/conf.d/default.conf:ro
     restart: unless-stopped
 
+  zombie:
+    build: .
+    container_name: css-zombie-reloaded
+    network_mode: host
+    working_dir: /css
+    volumes:
+      - ./instances/zombie-reloaded/css:/css
+      - ./instances/zombie-reloaded/sdk32:/home/steam/.steam/sdk32:ro
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    command: ["-game", "cstrike", "-console", "-tickrate", "128", "-port", "27016", "+maxplayers", "32", "+map", "de_dust2"]
+
   # To add a new server, copy this template and adjust:
   #
   # surf:
