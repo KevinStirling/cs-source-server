@@ -5,38 +5,27 @@
 #
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
-SM_DIR="${CSS_DIR}/addons/sourcemod"
-SPCOMP="${SM_DIR}/scripting/spcomp"
 
 # ---------------------------------------------------------------------------
-# Zombie Reloaded 3 Franug Edition — compiled from source for CS:S
-# https://github.com/Franc1sco/sm-zombiereloaded-3-Franug-Edition
-# Requires SourceMod 1.10 (set via server.env)
+# Zombie:Reloaded 3.1 by Greyscale/rhelgeby (original CS:S version)
+# https://forums.alliedmods.net/showthread.php?t=205567
 # ---------------------------------------------------------------------------
+ZR_ZIP="${SCRIPT_DIR}/zombiereloaded-3.1-r733.zip"
+
+if [ ! -f "${ZR_ZIP}" ]; then
+    echo "Error: ${ZR_ZIP} not found." >&2
+    echo "Download from https://forums.alliedmods.net/showthread.php?t=205567" >&2
+    echo "and place the zip in ${SCRIPT_DIR}/" >&2
+    exit 1
+fi
+
+echo ">>> Installing Zombie:Reloaded 3.1..."
 ZR_TEMP="$(mktemp -d)"
 trap 'rm -rf "${ZR_TEMP}"' EXIT
 
-echo ">>> Installing Zombie Reloaded..."
-curl -sSL "https://github.com/Franc1sco/sm-zombiereloaded-3-Franug-Edition/archive/master.zip" \
-    -o "${ZR_TEMP}/zombie.zip"
-unzip "${ZR_TEMP}/zombie.zip" -d "${ZR_TEMP}"
+unzip "${ZR_ZIP}" -d "${ZR_TEMP}"
+cp -r "${ZR_TEMP}/"* "${CSS_DIR}/"
 
-ZR_EXTRACTED="${ZR_TEMP}/sm-zombiereloaded-3-Franug-Edition-master"
-ZR_SRC="${ZR_EXTRACTED}/src"
-
-# Copy ZR include files so spcomp can resolve dependencies
-cp "${ZR_SRC}/include/"*.inc "${SM_DIR}/scripting/include/"
-cp -r "${ZR_SRC}/include/zr" "${SM_DIR}/scripting/include/"
-
-# Compile plugins from source
-for sp in "${ZR_SRC}/zombiereloaded.sp" "${ZR_SRC}/zombiereloaded_sounds.sp"; do
-    name="$(basename "${sp}" .sp)"
-    echo "    Compiling ${name}.sp..."
-    "${SPCOMP}" -i"${SM_DIR}/scripting/include" -i"${ZR_SRC}" "${sp}" -o"${SM_DIR}/plugins/${name}.smx"
-done
-
-# Copy CS:S mod contents (configs, translations, models, sounds, materials)
-cp -r "${ZR_EXTRACTED}/cstrike/"* \
-    "${CSS_DIR}/"
-
+echo ">>> Zombie:Reloaded installed."
