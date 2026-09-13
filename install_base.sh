@@ -9,12 +9,11 @@ CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
 
 # ---------------------------------------------------------------------------
 # Version config — defaults can be overridden via environment variables.
-# MetaMod:Source and SourceMod 1.11 are the latest branches for Source 1 games.
 # ---------------------------------------------------------------------------
-METAMOD_VERSION="${METAMOD_VERSION:-1.11}"
-METAMOD_BUILD="${METAMOD_BUILD:-1148}"
-SOURCEMOD_VERSION="${SOURCEMOD_VERSION:-1.11}"
-SOURCEMOD_BUILD="${SOURCEMOD_BUILD:-6960}"
+METAMOD_VERSION="${METAMOD_VERSION:-1.12}"
+METAMOD_BUILD="${METAMOD_BUILD:-1226}"
+SOURCEMOD_VERSION="${SOURCEMOD_VERSION:-1.12}"
+SOURCEMOD_BUILD="${SOURCEMOD_BUILD:-7253}"
 
 METAMOD_URL="https://mms.alliedmods.net/mmsdrop/${METAMOD_VERSION}/mmsource-${METAMOD_VERSION}.0-git${METAMOD_BUILD}-linux.tar.gz"
 SOURCEMOD_URL="https://sm.alliedmods.net/smdrop/${SOURCEMOD_VERSION}/sourcemod-${SOURCEMOD_VERSION}.0-git${SOURCEMOD_BUILD}-linux.tar.gz"
