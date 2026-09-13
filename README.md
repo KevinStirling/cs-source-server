@@ -7,15 +7,11 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
 ```
 ├── Dockerfile              # Runtime image (debian + i386 libs, no game data)
 ├── docker-compose.yml      # Defines each server as a service + FastDL nginx
-├── setup.sh                # Installs game + mods into instances/<server>/
+├── setup.sh                # Installs game + base mods into instances/<server>/
 ├── addmap.sh               # Adds a map, compresses it, updates mapcycle
 ├── compress_maps.sh        # Bzip2-compresses custom maps for FastDL
 ├── fastdl.conf             # Nginx config for FastDL
 ├── install_base.sh         # Installs MetaMod:Source + SourceMod (shared by all servers)
-├── servers/
-│   └── casual/
-│       ├── install_mods.sh # Server-specific plugin installation
-│       └── server.cfg      # Server-specific config
 └── instances/              # Created by setup.sh, mounted by Docker (gitignored)
     └── casual/
         ├── css/            # Full game installation
@@ -45,7 +41,7 @@ Create a `.env` file with your Steam Game Server Login Token ([create one here](
 STEAM_LOGIN_TOKEN=your_token_here
 ```
 
-Install the game and mods for a server:
+Install the game and base mods for a server:
 ```
 ./setup.sh casual
 ```
@@ -114,29 +110,12 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
 
 ## Adding a New Server
 
-1. Create a new directory under `servers/`:
-   ```
-   mkdir servers/surf
-   ```
-
-2. Add an `install_mods.sh` script for any server-specific plugins:
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail
-
-   CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
-   # curl -sSL "https://example.com/plugin.smx" \
-   #     -o "${CSS_DIR}/addons/sourcemod/plugins/plugin.smx"
-   ```
-
-3. Add a `server.cfg` with the server's settings.
-
-4. Run setup:
+1. Run setup to install the game and base mods:
    ```
    ./setup.sh surf
    ```
 
-5. Add a new service in `docker-compose.yml` with a unique port:
+2. Add a new service in `docker-compose.yml` with a unique port:
    ```yaml
    surf:
      build: .
@@ -153,7 +132,7 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
      command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "surf_mesa"]
    ```
 
-6. Open the new port in your firewall:
+3. Open the new port in your firewall:
    ```
    sudo ufw allow 27016/tcp
    sudo ufw allow 27016/udp
