@@ -2,12 +2,6 @@
 set -euo pipefail
 
 SERVER="${1:?Usage: ./setup.sh <server-name> (e.g., casual)}"
-SERVER_DIR="servers/${SERVER}"
-
-if [ ! -d "${SERVER_DIR}" ]; then
-    echo "Error: server config not found at ${SERVER_DIR}"
-    exit 1
-fi
 
 INSTANCE_DIR="instances/${SERVER}"
 GAME_DIR="$(pwd)/${INSTANCE_DIR}/css"
@@ -37,18 +31,9 @@ until ./steamcmd/steamcmd.sh \
     echo "steamcmd exited $?, retrying (attempt $((attempts + 1))/5)..."
 done
 
-# Install MetaMod + SourceMod + server-specific mods
+# Install MetaMod + SourceMod
 export GAME_DIR
-
-# Source per-server version overrides if present
-if [ -f "${SERVER_DIR}/server.env" ]; then
-    set -a
-    . "${SERVER_DIR}/server.env"
-    set +a
-fi
-
 ./install_base.sh
-"${SERVER_DIR}/install_mods.sh"
 
 # Set up steamclient.so for runtime
 mkdir -p "${INSTANCE_DIR}/sdk32"

@@ -7,17 +7,13 @@ Dockerized Counter-Strike: Source dedicated server with MetaMod:Source and Sourc
 ```
 ├── Dockerfile              # Runtime image (debian + i386 libs, no game data)
 ├── docker-compose.yml      # Defines each server as a service + FastDL nginx
-├── setup.sh                # Installs game + mods into instances/<server>/
+├── setup.sh                # Installs game + base mods into instances/<server>/
 ├── addmap.sh               # Adds a map, compresses it, updates mapcycle
 ├── compress_maps.sh        # Bzip2-compresses custom maps for FastDL
 ├── fastdl.conf             # Nginx config for FastDL
 ├── install_base.sh         # Installs MetaMod:Source + SourceMod (shared by all servers)
-├── servers/
-│   └── casual/
-│       ├── install_mods.sh # Server-specific plugin installation
-│       └── server.cfg      # Server-specific config
 └── instances/              # Created by setup.sh, mounted by Docker (gitignored)
-    └── casual/
+    └── classic/
         ├── css/            # Full game installation
         └── sdk32/          # steamclient.so for runtime
 ```
@@ -45,9 +41,9 @@ Create a `.env` file with your Steam Game Server Login Token ([create one here](
 STEAM_LOGIN_TOKEN=your_token_here
 ```
 
-Install the game and mods for a server:
+Install the game and base mods for a server:
 ```
-./setup.sh casual
+./setup.sh classic
 ```
 
 Build and start:
@@ -57,17 +53,17 @@ docker compose up -d --build
 
 Start a specific server:
 ```
-docker compose up -d casual
+docker compose up -d classic
 ```
 
 View logs:
 ```
-docker compose logs -f casual
+docker compose logs -f classic
 ```
 
 Access the server console:
 ```
-docker compose attach casual
+docker compose attach classic
 ```
 
 Stop all servers:
@@ -77,28 +73,10 @@ docker compose down
 
 ## Adding Custom Content
 
-### Maps
+All content such as maps, materials, models, sound are added by moving the file into their respective directory inside instances/{instance}/css/cstrike/. To automatically compress all files that have not yet been compressed, run `compress_files.sh` and point it at the desired instance. This will make the files available to fastdl.
 
-Add a map by pointing to the `.bsp` file. This copies it to the server, compresses it for FastDL, adds it to the map rotation, and restarts the server:
 ```
-./addmap.sh casual ~/maps/de_custom.bsp
-```
-
-To bulk-compress maps that are already in place:
-```
-./compress_maps.sh casual
-```
-
-### Other Content
-
-The game files live on the host under `instances/<server>/css/`. Add content via SFTP or directly:
-
-- **Plugins:** `instances/casual/css/cstrike/addons/sourcemod/plugins/`
-- **Configs:** `instances/casual/css/cstrike/cfg/`
-
-Restart the server to pick up changes:
-```
-docker compose restart casual
+./compress_files casual
 ```
 
 ## FastDL
@@ -114,34 +92,16 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
 
 ## Adding a New Server
 
-1. Create a new directory under `servers/`:
-   ```
-   mkdir servers/surf
-   ```
-
-2. Add an `install_mods.sh` script for any server-specific plugins:
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail
-
-   CSS_DIR="${GAME_DIR:?GAME_DIR must be set}/cstrike"
-   # curl -sSL "https://example.com/plugin.smx" \
-   #     -o "${CSS_DIR}/addons/sourcemod/plugins/plugin.smx"
-   ```
-
-3. Add a `server.cfg` with the server's settings.
-
-4. Run setup:
+1. Run setup to install the game and base mods:
    ```
    ./setup.sh surf
    ```
 
-5. Add a new service in `docker-compose.yml` with a unique port:
+2. Add a new service in `docker-compose.yml` with a unique port:
    ```yaml
    surf:
      build: .
      container_name: css-surf
-     network_mode: host
      working_dir: /css
      volumes:
        - ./instances/surf/css:/css
@@ -150,13 +110,19 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
      stdin_open: true
      tty: true
      env_file: .env
-     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27016", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "surf_mesa"]
+     command: ["-game", "cstrike", "-console", "-tickrate", "102", "-port", "27035", "+maxplayers", "32", "+sv_setsteamaccount", "${STEAM_LOGIN_TOKEN}", "+map", "surf_mesa"]
+    ports: 
+      - "27035:27035/udp"
+      - "27035:27035/tcp"
+    networks:
+      - default
+      - sourcebans_net
    ```
 
-6. Open the new port in your firewall:
+3. Open the new port in your firewall:
    ```
-   sudo ufw allow 27016/tcp
-   sudo ufw allow 27016/udp
+   sudo ufw allow 27035/tcp
+   sudo ufw allow 27035/udp
    ```
 
 ## Updating Base Plugins
