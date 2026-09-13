@@ -76,7 +76,7 @@ docker compose down
 All content such as maps, materials, models, sound are added by moving the file into their respective directory inside instances/{instance}/css/cstrike/. To automatically compress all files that have not yet been compressed, run `compress_files.sh` and point it at the desired instance. This will make the files available to fastdl.
 
 ```
-./compress_files casual
+./compress_files classic
 ```
 
 ## FastDL
@@ -129,5 +129,5 @@ After adding new custom maps, always run `./compress_maps.sh <server>` to create
 
 MetaMod:Source and SourceMod versions are pinned at the top of `install_base.sh`. Bump the version and build numbers there, then re-run setup:
 ```
-./setup.sh casual
+./setup.sh classic
 ```
